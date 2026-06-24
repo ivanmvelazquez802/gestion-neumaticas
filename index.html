@@ -8,8 +8,6 @@
     body { font-family: Arial; background:#f0f4f8; padding:20px;}
     .card { background:white; padding:15px; border-radius:10px; margin-bottom:15px;}
     h2 { text-align:center; }
-    select { width:100%; padding:8px; margin-bottom:10px; }
-    button { width:100%; padding:10px; background:#0077b6; color:white; border:none; border-radius:8px; }
   </style>
 
 </head>
@@ -18,45 +16,42 @@
 
 <h2>⚓ Gestión Neumáticas</h2>
 
-<div class="card">
-  <h3>Asignar lancha</h3>
-
-  <select id="dia">
-    <option>Lunes</option>
-    <option>Martes</option>
-    <option>Miércoles</option>
-    <option>Jueves</option>
-    <option>Viernes</option>
-    <option>Sábado</option>
-    <option>Domingo</option>
-  </select>
-
-  <select id="turno">
-    <option>Mañana</option>
-    <option>Tarde</option>
-  </select>
-
-  <select id="lancha">
-    <option>N-01</option>
-    <option>N-02</option>
-    <option>N-03</option>
-    <option>N-04</option>
-  </select>
-
-  <select id="entrenador">
-    <option>Sergio</option>
-    <option>Álvaro</option>
-    <option>Carlos</option>
-  </select>
-
-  <button onclick="añadir()">Asignar</button>
-</div>
-
 <div id="resultado"></div>
 
 <script>
+
+// 🔗 GOOGLE SHEETS (con proxy)
 const URL = "https://api.allorigins.win/raw?url=https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/gviz/tq?tqx=out:json";
 
+// 📅 HOY
+const hoy = normalizarTexto(
+  new Date().toLocaleDateString("es-ES", { weekday: "long" })
+);
+
+// 🧠 NORMALIZAR TEXTO (quita acentos y mayúsculas)
+function normalizarTexto(texto) {
+  return (texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// 🎨 COLORES
+function colorCategoria(cat) {
+  const c = normalizarTexto(cat);
+
+  if(c === "optimist") return "#dbeafe";
+  if(c === "ilca") return "#dcfce7";
+  if(c === "420") return "#fef3c7";
+  if(c === "snipe") return "#fde68a";
+  if(c === "29er") return "#fbcfe8";
+  if(c === "windsurf") return "#fce7f3";
+  if(c === "windfoil") return "#ddd6fe";
+
+  return "#e0f2fe";
+}
+
+// 🚀 CARGAR DATOS
 async function cargarDatos() {
   try {
     const res = await fetch(URL);
@@ -89,28 +84,50 @@ async function cargarDatos() {
   }
 }
 
+// 🧩 PINTAR
 function pintar(datos) {
   let html = "";
 
   const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 
   dias.forEach(d => {
-    const items = datos.filter(i => i.dia === d);
+
+    // SOLO HOY (tolerante a errores)
+    if(normalizarTexto(d) !== hoy) return;
+
+    const items = datos.filter(i => 
+      normalizarTexto(i.dia) === hoy
+    );
+
+    // ordenar turno
+    items.sort((a, b) => a.turno.localeCompare(b.turno));
 
     if(items.length > 0){
       html += `<div class="card"><h3>${d}</h3>`;
 
       items.forEach(i => {
-        html += `<p>${i.turno}: ${i.lancha} - ${i.entrenador} (${i.categoria})</p>`;
+        const color = colorCategoria(i.categoria);
+
+        html += `
+        <p style="background:${color}; padding:6px; border-radius:6px;">
+          ${i.turno}: ${i.lancha} - ${i.entrenador} (${i.categoria})
+        </p>
+        `;
       });
 
       html += `</div>`;
+    } else {
+      html += `<div class="card"><h3>${d}</h3><p>Sin asignaciones</p></div>`;
     }
   });
 
   document.getElementById("resultado").innerHTML = html;
 }
 
+// 🔄 INICIAR
 cargarDatos();
+
 </script>
 
+</body>
+</html>
