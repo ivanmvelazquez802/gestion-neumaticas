@@ -89,9 +89,7 @@ function pintar(datos) {
 
   dias.forEach(d => {
 
-    if(d !== hoy) return;
-
-    const items = datos.filter(i => normalizar(i.dia) === hoy);
+    const items = datos.filter(i => normalizar(i.dia) === d);
 
     if(items.length > 0){
       html += `<div class="card"><h3>${d}</h3>`;
@@ -104,10 +102,11 @@ function pintar(datos) {
       });
 
       html += `</div>`;
-    } else {
-      html += `<div class="card"><h3>${d}</h3><p>Sin asignaciones</p></div>`;
     }
   });
+
+  document.getElementById("resultado").innerHTML = html;
+}
 
   document.getElementById("resultado").innerHTML = html;
 }
