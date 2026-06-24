@@ -69,7 +69,6 @@
 
 const URL = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
 
-// limpiar texto
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
@@ -77,7 +76,6 @@ function normalizar(texto) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-// cargar datos
 async function cargar() {
   const res = await fetch(URL);
   const text = await res.text();
@@ -86,7 +84,6 @@ async function cargar() {
 
   let datos = filas.map(f => {
     const c = f.split(",");
-
     return {
       dia: c[0],
       turno: c[1],
@@ -100,31 +97,26 @@ async function cargar() {
   pintar(datos);
 }
 
-// pintar app
 function pintar(datos) {
   const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
-
   let html = "";
 
   diasOrden.forEach(d => {
-
     const items = datos.filter(i => normalizar(i.dia) === d);
 
     if(items.length === 0) return;
 
-    html += `<div class="dia"><h3>${d.toUpperCase()}</h3>`;
+    html += `<h3>${d.toUpperCase()}</h3>`;
 
     items.forEach(i => {
       html += `
-        <div class="card">
-          <div class="turno">${i.turno}</div>
-          <div class="lancha">${i.lancha} - ${i.entrenador}</div>
-          <div class="categoria">${i.categoria} ${i.evento ? "- " + i.evento : ""}</div>
+        <div style="background:#112b45; padding:10px; border-radius:8px; margin-bottom:8px;">
+          <strong>${i.turno}</strong><br>
+          ${i.lancha} - ${i.entrenador}<br>
+          <small>${i.categoria} ${i.evento ? "- " + i.evento : ""}</small>
         </div>
       `;
     });
-
-    html += `</div>`;
   });
 
   document.getElementById("app").innerHTML = html;
