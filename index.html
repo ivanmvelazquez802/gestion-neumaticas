@@ -24,37 +24,35 @@
       padding: 15px;
     }
 
-    .dia {
-      margin-bottom: 20px;
+    .resumen {
+      background: #0077b6;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
     }
 
-    .dia h3 {
-      margin-bottom: 10px;
-      border-bottom: 2px solid #0077b6;
-      padding-bottom: 5px;
+    .dia {
+      margin-bottom: 20px;
     }
 
     .card {
       background: #112b45;
       padding: 10px;
       border-radius: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .turno {
-      font-weight: bold;
-      color: #90e0ef;
+    h3 {
+      border-bottom: 2px solid #0077b6;
+      padding-bottom: 5px;
     }
 
-    .lancha {
-      font-size: 18px;
-      font-weight: bold;
+    h4 {
+      margin: 8px 0 4px 0;
     }
 
-    .categoria {
-      font-size: 12px;
-      opacity: 0.8;
-    }
   </style>
 
 </head>
@@ -90,7 +88,8 @@ async function cargar() {
       lancha: c[2],
       entrenador: c[3],
       categoria: c[4],
-      evento: c[5]
+      evento: c[5],
+      estado: c[6]
     };
   });
 
@@ -98,25 +97,50 @@ async function cargar() {
 }
 
 function pintar(datos) {
+
+  let agua = 0;
+  let tierra = 0;
+  let mantenimiento = 0;
+
+  datos.forEach(i => {
+    const e = normalizar(i.estado);
+    if(e === "agua") agua++;
+    else if(e === "tierra") tierra++;
+    else if(e === "mantenimiento") mantenimiento++;
+  });
+
+  let html = `
+  <div class="resumen">
+    🚤 Agua: ${agua} | 🏖 Tierra: ${tierra} | 🛠 Mantenimiento: ${mantenimiento}
+  </div>
+  `;
+
   const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
-  let html = "";
 
   diasOrden.forEach(d => {
     const items = datos.filter(i => normalizar(i.dia) === d);
-
     if(items.length === 0) return;
 
-    html += `<h3>${d.toUpperCase()}</h3>`;
+    html += `<div class="dia"><h3>${d.toUpperCase()}</h3>`;
 
-    items.forEach(i => {
-      html += `
-        <div style="background:#112b45; padding:10px; border-radius:8px; margin-bottom:8px;">
-          <strong>${i.turno}</strong><br>
-          ${i.lancha} - ${i.entrenador}<br>
-          <small>${i.categoria} ${i.evento ? "- " + i.evento : ""}</small>
-        </div>
-      `;
-    });
+    const manana = items.filter(i => normalizar(i.turno) === "manana");
+    const tarde = items.filter(i => normalizar(i.turno) === "tarde");
+
+    if(manana.length > 0){
+      html += `<h4>🟦 Mañana</h4>`;
+      manana.forEach(i => {
+        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+      });
+    }
+
+    if(tarde.length > 0){
+      html += `<h4>🟨 Tarde</h4>`;
+      tarde.forEach(i => {
+        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+      });
+    }
+
+    html += `</div>`;
   });
 
   document.getElementById("app").innerHTML = html;
