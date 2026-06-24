@@ -31,9 +31,10 @@
       margin-bottom: 15px;
       text-align: center;
       font-weight: bold;
+      font-size: 18px;
     }
 
-    .dia {
+    .bloque {
       margin-bottom: 20px;
     }
 
@@ -65,7 +66,7 @@
 
 <script>
 
-const URL = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
+const URL_BASE = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=";
 
 function normalizar(texto) {
   return (texto || "")
@@ -74,39 +75,69 @@ function normalizar(texto) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// 🔵 CARGAR TODO
 async function cargar() {
-  const res = await fetch(URL);
-  const text = await res.text();
 
-  const filas = text.trim().split("\n").slice(1);
+  // HOJA PLANIFICACIÓN (Hoja 1)
+  const res1 = await fetch(URL_BASE + "Hoja%201");
+  const text1 = await res1.text();
 
-  let datos = filas.map(f => {
+  const filas1 = text1.trim().split("\n").slice(1);
+
+  let asignaciones = filas1.map(f => {
     const c = f.split(",");
     return {
       dia: c[0],
       turno: c[1],
       lancha: c[2],
-      entrenador: c[3],
-      categoria: c[4],
-      evento: c[5],
-      estado: c[6]
+      entrenador: c[3]
     };
   });
 
-  pintar(datos);
+  // 🟢 HOJA FLOTA
+  const res2 = await fetch(URL_BASE + "FLOTA");
+  const text2 = await res2.text();
+
+  const filas2 = text2.trim().split("\n").slice(1);
+
+  let flota = filas2.map(f => {
+    const c = f.split(",");
+    return {
+      lancha: c[0],
+      estado: c[1]
+    };
+  });
+
+  pintar(asignaciones, flota);
 }
 
-function pintar(datos) {
+// 🔥 PINTAR TODO
+function pintar(asignaciones, flota) {
 
+  // CONTADORES
   let agua = 0;
   let tierra = 0;
   let mantenimiento = 0;
 
-  datos.forEach(i => {
+  let listaAgua = [];
+  let listaTierra = [];
+  let listaMant = [];
+
+  flota.forEach(i => {
     const e = normalizar(i.estado);
-    if(e === "agua") agua++;
-    else if(e === "tierra") tierra++;
-    else if(e === "mantenimiento") mantenimiento++;
+
+    if(e === "agua"){
+      agua++;
+      listaAgua.push(i.lancha);
+    }
+    else if(e === "tierra"){
+      tierra++;
+      listaTierra.push(i.lancha);
+    }
+    else if(e === "mantenimiento"){
+      mantenimiento++;
+      listaMant.push(i.lancha);
+    }
   });
 
   let html = `
@@ -115,13 +146,19 @@ function pintar(datos) {
   </div>
   `;
 
+  // LISTAS
+  html += `<div class="bloque"><h3>🚤 En el agua</h3>${listaAgua.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
+  html += `<div class="bloque"><h3>🏖 En tierra</h3>${listaTierra.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
+  html += `<div class="bloque"><h3>🛠 Mantenimiento</h3>${listaMant.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
+
+  // PLANIFICACIÓN
   const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
   diasOrden.forEach(d => {
-    const items = datos.filter(i => normalizar(i.dia) === d);
+    const items = asignaciones.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
 
-    html += `<div class="dia"><h3>${d.toUpperCase()}</h3>`;
+    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
