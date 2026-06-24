@@ -20,25 +20,25 @@
 
 <script>
 
-// 🔗 GOOGLE SHEETS (con proxy)
-const URL = "https://api.allorigins.win/raw?url=https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/gviz/tq?tqx=out:json";
+// 🔗 TU GOOGLE SHEETS (HOJA 1 CON ESPACIO)
+const URL = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
 
-// 📅 HOY
-const hoy = normalizarTexto(
-  new Date().toLocaleDateString("es-ES", { weekday: "long" })
-);
-
-// 🧠 NORMALIZAR TEXTO (quita acentos y mayúsculas)
-function normalizarTexto(texto) {
+// 🧠 NORMALIZAR TEXTO
+function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// 📅 DÍA ACTUAL
+const hoy = normalizar(
+  new Date().toLocaleDateString("es-ES", { weekday: "long" })
+);
+
 // 🎨 COLORES
-function colorCategoria(cat) {
-  const c = normalizarTexto(cat);
+function color(cat) {
+  const c = normalizar(cat);
 
   if(c === "optimist") return "#dbeafe";
   if(c === "ilca") return "#dcfce7";
@@ -52,35 +52,32 @@ function colorCategoria(cat) {
 }
 
 // 🚀 CARGAR DATOS
-async function cargarDatos() {
+async function cargar() {
   try {
     const res = await fetch(URL);
     const text = await res.text();
 
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
+    const filas = text.split("\n").slice(1);
 
-    let datos = [];
+    let datos = filas.map(f => {
+      const c = f.split(",");
 
-    rows.forEach(r => {
-      if (!r.c) return;
-
-      datos.push({
-        dia: r.c[0]?.v || "",
-        turno: r.c[1]?.v || "",
-        lancha: r.c[2]?.v || "",
-        entrenador: r.c[3]?.v || "",
-        categoria: r.c[4]?.v || "",
-        evento: r.c[5]?.v || ""
-      });
+      return {
+        dia: c[0],
+        turno: c[1],
+        lancha: c[2],
+        entrenador: c[3],
+        categoria: c[4],
+        evento: c[5]
+      };
     });
 
     pintar(datos);
 
-  } catch (error) {
-    document.getElementById("resultado").innerHTML = 
+  } catch (e) {
+    document.getElementById("resultado").innerHTML =
       "<p style='color:red'>Error cargando datos</p>";
-    console.error(error);
+    console.error(e);
   }
 }
 
@@ -88,31 +85,22 @@ async function cargarDatos() {
 function pintar(datos) {
   let html = "";
 
-  const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
   dias.forEach(d => {
 
-    // SOLO HOY (tolerante a errores)
-    if(normalizarTexto(d) !== hoy) return;
+    if(d !== hoy) return;
 
-    const items = datos.filter(i => 
-      normalizarTexto(i.dia) === hoy
-    );
-
-    // ordenar turno
-    items.sort((a, b) => a.turno.localeCompare(b.turno));
+    const items = datos.filter(i => normalizar(i.dia) === hoy);
 
     if(items.length > 0){
       html += `<div class="card"><h3>${d}</h3>`;
 
       items.forEach(i => {
-        const color = colorCategoria(i.categoria);
-
         html += `
-        <p style="background:${color}; padding:6px; border-radius:6px;">
+        <p style="background:${color(i.categoria)}; padding:6px; border-radius:6px;">
           ${i.turno}: ${i.lancha} - ${i.entrenador} (${i.categoria})
-        </p>
-        `;
+        </p>`;
       });
 
       html += `</div>`;
@@ -125,7 +113,7 @@ function pintar(datos) {
 }
 
 // 🔄 INICIAR
-cargarDatos();
+cargar();
 
 </script>
 
