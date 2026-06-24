@@ -85,25 +85,25 @@ async function cargar() {
     let asignaciones = filas1.map(f => {
       const c = f.split(/,|;/);
       return {
-        dia: c[0],
-        turno: c[1],
-        lancha: c[2],
-        entrenador: c[3]
+        dia: (c[0] || "").trim(),
+        turno: (c[1] || "").trim(),
+        lancha: (c[2] || "").trim(),
+        entrenador: (c[3] || "").trim()
       };
     });
 
-    // 🚤 FLOTA (CON PROXY)
+    // 🚤 FLOTA (LINK CORRECTO + PROXY)
     const urlFlota = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv";
 
     const res2 = await fetch("https://corsproxy.io/?" + encodeURIComponent(urlFlota));
     const text2 = await res2.text();
 
-    console.log("FLOTA RAW:", text2);
+    console.log("CSV FLOTA:", text2);
 
-    // 🚨 SI NO LLEGA BIEN
+    // 🚨 VALIDACIÓN
     if (!text2.includes("N-01")) {
       document.getElementById("app").innerHTML =
-        "<div class='error'>⚠️ ERROR: No está llegando la hoja FLOTA (Google bloqueando o mal publicado)</div>";
+        "<div class='error'>⚠️ ERROR: El CSV de FLOTA no está devolviendo datos válidos</div>";
       return;
     }
 
