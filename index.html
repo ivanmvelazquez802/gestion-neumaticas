@@ -43,7 +43,6 @@
     h4 {
       margin: 8px 0 4px 0;
     }
-
   </style>
 
 </head>
@@ -56,8 +55,7 @@
 
 <script>
 
-const URL_BASE = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=";
-
+// 🔵 NORMALIZAR TEXTO
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
@@ -69,8 +67,8 @@ function normalizar(texto) {
 // 🔵 CARGAR DATOS
 async function cargar() {
 
-  // HOJA 1 (PLANIFICACIÓN)
-  const res1 = await fetch(URL_BASE + "Hoja%201");
+  // 🔹 HOJA 1 (PLANIFICACIÓN)
+  const res1 = await fetch("https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201");
   const text1 = await res1.text();
 
   const filas1 = text1.trim().split("\n").slice(1);
@@ -85,8 +83,8 @@ async function cargar() {
     };
   });
 
-  // 🟢 HOJA 2 (FLOTA)
-  const res2 = await fetch(URL_BASE + "FLOTA");
+  // 🔥 HOJA FLOTA (PUBLICADA)
+  const res2 = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv");
   const text2 = await res2.text();
 
   const filas2 = text2.trim().split("\n").slice(1);
