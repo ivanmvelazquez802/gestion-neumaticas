@@ -55,29 +55,38 @@
 <div id="resultado"></div>
 
 <script>
-const URL = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/gviz/tq?tqx=out:json";
+const URL = "https://api.allorigins.win/raw?url=https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/gviz/tq?tqx=out:json";
 
 async function cargarDatos() {
-  const res = await fetch(URL);
-  const text = await res.text();
+  try {
+    const res = await fetch(URL);
+    const text = await res.text();
 
-  const json = JSON.parse(text.substr(47).slice(0, -2));
-  const rows = json.table.rows;
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows;
 
-  let datos = [];
+    let datos = [];
 
-  rows.forEach(r => {
-    datos.push({
-      dia: r.c[0]?.v,
-      turno: r.c[1]?.v,
-      lancha: r.c[2]?.v,
-      entrenador: r.c[3]?.v,
-      categoria: r.c[4]?.v,
-      evento: r.c[5]?.v,
+    rows.forEach(r => {
+      if (!r.c) return;
+
+      datos.push({
+        dia: r.c[0]?.v || "",
+        turno: r.c[1]?.v || "",
+        lancha: r.c[2]?.v || "",
+        entrenador: r.c[3]?.v || "",
+        categoria: r.c[4]?.v || "",
+        evento: r.c[5]?.v || ""
+      });
     });
-  });
 
-  pintar(datos);
+    pintar(datos);
+
+  } catch (error) {
+    document.getElementById("resultado").innerHTML = 
+      "<p style='color:red'>Error cargando datos</p>";
+    console.error(error);
+  }
 }
 
 function pintar(datos) {
@@ -104,3 +113,4 @@ function pintar(datos) {
 
 cargarDatos();
 </script>
+
