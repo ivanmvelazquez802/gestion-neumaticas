@@ -20,178 +20,21 @@
       font-weight: bold;
     }
 
-    .contenedor {
-      padding: 15px;
-    }
-
-    .bloque {
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: #112b45;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-    }
-
-    .error {
-      background: red;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-
-    h3 {
-      border-bottom: 2px solid #0077b6;
-      padding-bottom: 5px;
-    }
-
-    h4 {
-      margin: 8px 0 4px 0;
+    iframe {
+      width: 100%;
+      height: 90vh;
+      border: none;
     }
   </style>
-
 </head>
 
 <body>
 
 <header>⚓ Gestión Neumáticas RCNGC</header>
 
-<div class="contenedor" id="app">Cargando...</div>
-
-<script>
-
-// 🔵 NORMALIZAR TEXTO
-function normalizar(texto) {
-  return (texto || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-}
-
-// 🔵 CARGAR DATOS
-async function cargar() {
-
-  try {
-
-    // 📅 PLANIFICACIÓN
-    const res1 = await fetch("https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201");
-    const text1 = await res1.text();
-
-    const filas1 = text1.trim().split(/\r?\n/).slice(1);
-
-    let asignaciones = filas1.map(f => {
-      const c = f.split(/,|;/);
-      return {
-        dia: (c[0] || "").trim(),
-        turno: (c[1] || "").trim(),
-        lancha: (c[2] || "").trim(),
-        entrenador: (c[3] || "").trim()
-      };
-    });
-
-    // 🚤 FLOTA (LINK CORRECTO + PROXY)
-    const urlFlota = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv";
-
-    const res2 = await fetch("https://corsproxy.io/?" + encodeURIComponent(urlFlota));
-    const text2 = await res2.text();
-
-    console.log("CSV FLOTA:", text2);
-
-    // 🚨 VALIDACIÓN
-    if (!text2.includes("N-01")) {
-      document.getElementById("app").innerHTML =
-        "<div class='error'>⚠️ ERROR: El CSV de FLOTA no está devolviendo datos válidos</div>";
-      return;
-    }
-
-    const filas2 = text2.trim().split(/\r?\n/).slice(1);
-
-    let flota = filas2.map(f => {
-      const c = f.split(/,|;/);
-      return {
-        lancha: (c[0] || "").trim(),
-        estado: (c[1] || "").trim()
-      };
-    });
-
-    pintar(asignaciones, flota);
-
-  } catch (err) {
-    document.getElementById("app").innerHTML =
-      "<div class='error'>❌ Error cargando datos</div>";
-    console.error(err);
-  }
-}
-
-// 🔥 PINTAR TODO
-function pintar(asignaciones, flota) {
-
-  let listaAgua = [];
-  let listaTierra = [];
-  let listaMant = [];
-
-  flota.forEach(i => {
-
-    const e = normalizar(i.estado);
-
-    if(e.includes("agua")){
-      listaAgua.push(i.lancha);
-    }
-    else if(e.includes("tierra")){
-      listaTierra.push(i.lancha);
-    }
-    else if(e.includes("mantenimiento")){
-      listaMant.push(i.lancha);
-    }
-
-  });
-
-  let html = "";
-
-  // 🚤 FLOTA
-  html += `<div class="bloque"><h3>🚤 En el agua</h3>${listaAgua.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
-  html += `<div class="bloque"><h3>🏖 En tierra</h3>${listaTierra.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
-  html += `<div class="bloque"><h3>🛠 Mantenimiento</h3>${listaMant.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
-
-  // 📅 PLANIFICACIÓN
-  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
-
-  dias.forEach(d => {
-
-    const items = asignaciones.filter(i => normalizar(i.dia) === d);
-    if(items.length === 0) return;
-
-    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
-
-    const manana = items.filter(i => normalizar(i.turno) === "manana");
-    const tarde = items.filter(i => normalizar(i.turno) === "tarde");
-
-    if(manana.length > 0){
-      html += `<h4>🟦 Mañana</h4>`;
-      manana.forEach(i => {
-        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
-      });
-    }
-
-    if(tarde.length > 0){
-      html += `<h4>🟨 Tarde</h4>`;
-      tarde.forEach(i => {
-        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
-      });
-    }
-
-    html += `</div>`;
-  });
-
-  document.getElementById("app").innerHTML = html;
-}
-
-cargar();
-
-</script>
+<iframe 
+src="https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/edit?usp=sharing">
+</iframe>
 
 </body>
 </html>
