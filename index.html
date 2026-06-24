@@ -2,59 +2,18 @@
 <html>
 <head>
   <title>Gestión Neumáticas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body { font-family: Arial; background:#f0f4f8; padding:20px;}
-    .card { background:white; padding:15px; border-radius:10px; margin-bottom:15px;}
-    h2 { text-align:center; }
-  </style>
-
 </head>
 
 <body>
 
 <h2>⚓ Gestión Neumáticas</h2>
 
-<div id="resultado"></div>
+<iframe 
+  src="PEGA_AQUI_EL_ENLACE_PUBLICADO"
+  width="100%" 
+  height="600"
+  style="border:none;">
+</iframe>
 
-<script>
-async function cargar() {
-  try {
-    const res = await fetch(URL);
-    const text = await res.text();
-
-    console.log(text); // 👈 IMPORTANTE (ver datos)
-
-    const filas = text.trim().split("\n");
-
-    let datos = [];
-
-    for (let i = 1; i < filas.length; i++) {
-      const c = filas[i].split(",");
-
-      if(c.length < 5) continue;
-
-      datos.push({
-        dia: c[0]?.trim(),
-        turno: c[1]?.trim(),
-        lancha: c[2]?.trim(),
-        entrenador: c[3]?.trim(),
-        categoria: c[4]?.trim(),
-        evento: c[5]?.trim()
-      });
-    }
-
-    console.log(datos); // 👈 ver si llegan datos
-
-    pintar(datos);
-
-  } catch (e) {
-    document.getElementById("resultado").innerHTML =
-      "<p style='color:red'>Error cargando datos</p>";
-    console.error(e);
-  }
-}
-</script>
 </body>
 </html>
