@@ -19,58 +19,33 @@
 <div id="resultado"></div>
 
 <script>
-
-// 🔗 TU GOOGLE SHEETS (HOJA 1 CON ESPACIO)
-const URL = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
-
-// 🧠 NORMALIZAR TEXTO
-function normalizar(texto) {
-  return (texto || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-// 📅 DÍA ACTUAL
-const hoy = normalizar(
-  new Date().toLocaleDateString("es-ES", { weekday: "long" })
-);
-
-// 🎨 COLORES
-function color(cat) {
-  const c = normalizar(cat);
-
-  if(c === "optimist") return "#dbeafe";
-  if(c === "ilca") return "#dcfce7";
-  if(c === "420") return "#fef3c7";
-  if(c === "snipe") return "#fde68a";
-  if(c === "29er") return "#fbcfe8";
-  if(c === "windsurf") return "#fce7f3";
-  if(c === "windfoil") return "#ddd6fe";
-
-  return "#e0f2fe";
-}
-
-// 🚀 CARGAR DATOS
 async function cargar() {
   try {
     const res = await fetch(URL);
     const text = await res.text();
 
-    const filas = text.split("\n").slice(1);
+    console.log(text); // 👈 IMPORTANTE (ver datos)
 
-    let datos = filas.map(f => {
-      const c = f.split(",");
+    const filas = text.trim().split("\n");
 
-      return {
-        dia: c[0],
-        turno: c[1],
-        lancha: c[2],
-        entrenador: c[3],
-        categoria: c[4],
-        evento: c[5]
-      };
-    });
+    let datos = [];
+
+    for (let i = 1; i < filas.length; i++) {
+      const c = filas[i].split(",");
+
+      if(c.length < 5) continue;
+
+      datos.push({
+        dia: c[0]?.trim(),
+        turno: c[1]?.trim(),
+        lancha: c[2]?.trim(),
+        entrenador: c[3]?.trim(),
+        categoria: c[4]?.trim(),
+        evento: c[5]?.trim()
+      });
+    }
+
+    console.log(datos); // 👈 ver si llegan datos
 
     pintar(datos);
 
@@ -80,41 +55,6 @@ async function cargar() {
     console.error(e);
   }
 }
-
-// 🧩 PINTAR
-function pintar(datos) {
-  let html = "";
-
-  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
-
-  dias.forEach(d => {
-
-    const items = datos.filter(i => normalizar(i.dia) === d);
-
-    if(items.length > 0){
-      html += `<div class="card"><h3>${d}</h3>`;
-
-      items.forEach(i => {
-        html += `
-        <p style="background:${color(i.categoria)}; padding:6px; border-radius:6px;">
-          ${i.turno}: ${i.lancha} - ${i.entrenador} (${i.categoria})
-        </p>`;
-      });
-
-      html += `</div>`;
-    }
-  });
-
-  document.getElementById("resultado").innerHTML = html;
-}
-
-  document.getElementById("resultado").innerHTML = html;
-}
-
-// 🔄 INICIAR
-cargar();
-
 </script>
-
 </body>
 </html>
