@@ -87,15 +87,16 @@ async function cargar() {
   const res2 = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv");
   const text2 = await res2.text();
 
-  const filas2 = text2.trim().split("\n").slice(1);
+const filas2 = text2.trim().split("\n").slice(1);
 
-  let flota = filas2.map(f => {
-    const c = f.split(",");
-    return {
-      lancha: c[0],
-      estado: c[1]
-    };
-  });
+let flota = filas2.map(f => {
+  const c = f.split(/,|;/); // 👈 clave
+
+  return {
+    lancha: (c[0] || "").trim(),
+    estado: (c[1] || "").trim()
+  };
+});
 
   pintar(asignaciones, flota);
 }
