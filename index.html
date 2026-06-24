@@ -55,20 +55,32 @@
 <div id="resultado"></div>
 
 <script>
-let datos = [];
+const URL =https://ivanmvelazquez802.github.io/gestion-neumaticas/gviz/tq?tqx=out:json ;
 
-function añadir() {
-  const dia = document.getElementById("dia").value;
-  const turno = document.getElementById("turno").value;
-  const lancha = document.getElementById("lancha").value;
-  const entrenador = document.getElementById("entrenador").value;
+async function cargarDatos() {
+  const res = await fetch(URL);
+  const text = await res.text();
 
-  datos.push({ dia, turno, lancha, entrenador });
+  const json = JSON.parse(text.substr(47).slice(0, -2));
+  const rows = json.table.rows;
 
-  pintar();
+  let datos = [];
+
+  rows.forEach(r => {
+    datos.push({
+      dia: r.c[0]?.v,
+      turno: r.c[1]?.v,
+      lancha: r.c[2]?.v,
+      entrenador: r.c[3]?.v,
+      categoria: r.c[4]?.v,
+      evento: r.c[5]?.v,
+    });
+  });
+
+  pintar(datos);
 }
 
-function pintar() {
+function pintar(datos) {
   let html = "";
 
   const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
@@ -80,7 +92,7 @@ function pintar() {
       html += `<div class="card"><h3>${d}</h3>`;
 
       items.forEach(i => {
-        html += `<p>${i.turno}: ${i.lancha} - ${i.entrenador}</p>`;
+        html += `<p>${i.turno}: ${i.lancha} - ${i.entrenador} (${i.categoria})</p>`;
       });
 
       html += `</div>`;
@@ -89,7 +101,6 @@ function pintar() {
 
   document.getElementById("resultado").innerHTML = html;
 }
-</script>
 
-</body>
-</html>
+cargarDatos();
+</script>
