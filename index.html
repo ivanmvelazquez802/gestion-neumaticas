@@ -35,6 +35,13 @@
       margin-bottom: 6px;
     }
 
+    .error {
+      background: red;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
     h3 {
       border-bottom: 2px solid #0077b6;
       padding-bottom: 5px;
@@ -51,7 +58,7 @@
 
 <header>⚓ Gestión Neumáticas RCNGC</header>
 
-<div class="contenedor" id="app"></div>
+<div class="contenedor" id="app">Cargando...</div>
 
 <script>
 
@@ -67,39 +74,56 @@ function normalizar(texto) {
 // 🔵 CARGAR DATOS
 async function cargar() {
 
-  // 🔹 HOJA 1 (PLANIFICACIÓN)
-  const res1 = await fetch("https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201");
-  const text1 = await res1.text();
+  try {
 
-  const filas1 = text1.trim().split(/\r?\n/).slice(1);
+    // 📅 PLANIFICACIÓN
+    const res1 = await fetch("https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201");
+    const text1 = await res1.text();
 
-  let asignaciones = filas1.map(f => {
-    const c = f.split(/,|;/);
+    const filas1 = text1.trim().split(/\r?\n/).slice(1);
 
-    return {
-      dia: (c[0] || "").trim(),
-      turno: (c[1] || "").trim(),
-      lancha: (c[2] || "").trim(),
-      entrenador: (c[3] || "").trim()
-    };
-  });
+    let asignaciones = filas1.map(f => {
+      const c = f.split(/,|;/);
+      return {
+        dia: c[0],
+        turno: c[1],
+        lancha: c[2],
+        entrenador: c[3]
+      };
+    });
 
-  // 🔥 HOJA FLOTA (PUBLICADA)
-  const res2 = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv");
-  const text2 = await res2.text();
+    // 🚤 FLOTA (CON PROXY)
+    const urlFlota = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPAuEcLWGMiKwNrvEaZMf6Uz-bwoGxPKOxGIxjWM7v49Mf6LJZb5bLAcOOKBqMNN5bU40N7c0gX/pub?output=csv";
 
-  const filas2 = text2.trim().split(/\r?\n/).slice(1);
+    const res2 = await fetch("https://corsproxy.io/?" + encodeURIComponent(urlFlota));
+    const text2 = await res2.text();
 
-  let flota = filas2.map(f => {
-    const c = f.split(/,|;/);
+    console.log("FLOTA RAW:", text2);
 
-    return {
-      lancha: (c[0] || "").trim(),
-      estado: (c[1] || "").trim()
-    };
-  });
+    // 🚨 SI NO LLEGA BIEN
+    if (!text2.includes("N-01")) {
+      document.getElementById("app").innerHTML =
+        "<div class='error'>⚠️ ERROR: No está llegando la hoja FLOTA (Google bloqueando o mal publicado)</div>";
+      return;
+    }
 
-  pintar(asignaciones, flota);
+    const filas2 = text2.trim().split(/\r?\n/).slice(1);
+
+    let flota = filas2.map(f => {
+      const c = f.split(/,|;/);
+      return {
+        lancha: (c[0] || "").trim(),
+        estado: (c[1] || "").trim()
+      };
+    });
+
+    pintar(asignaciones, flota);
+
+  } catch (err) {
+    document.getElementById("app").innerHTML =
+      "<div class='error'>❌ Error cargando datos</div>";
+    console.error(err);
+  }
 }
 
 // 🔥 PINTAR TODO
@@ -127,15 +151,15 @@ function pintar(asignaciones, flota) {
 
   let html = "";
 
-  // 🚤 FLOTAS
+  // 🚤 FLOTA
   html += `<div class="bloque"><h3>🚤 En el agua</h3>${listaAgua.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
   html += `<div class="bloque"><h3>🏖 En tierra</h3>${listaTierra.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
   html += `<div class="bloque"><h3>🛠 Mantenimiento</h3>${listaMant.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
 
   // 📅 PLANIFICACIÓN
-  const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-  diasOrden.forEach(d => {
+  dias.forEach(d => {
 
     const items = asignaciones.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
