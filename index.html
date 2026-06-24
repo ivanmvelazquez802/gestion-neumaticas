@@ -8,6 +8,8 @@
     body { font-family: Arial; background:#f0f4f8; padding:20px;}
     .card { background:white; padding:15px; border-radius:10px; margin-bottom:15px;}
     h2 { text-align:center; }
+    select { width:100%; padding:8px; margin-bottom:10px; }
+    button { width:100%; padding:10px; background:#0077b6; color:white; border:none; border-radius:8px; }
   </style>
 
 </head>
@@ -17,16 +19,77 @@
 <h2>⚓ Gestión Neumáticas</h2>
 
 <div class="card">
-  <h3>Lunes</h3>
-  <p>Mañana: N-01 - Sergio</p>
-  <p>Tarde: N-03 - Álvaro</p>
+  <h3>Asignar lancha</h3>
+
+  <select id="dia">
+    <option>Lunes</option>
+    <option>Martes</option>
+    <option>Miércoles</option>
+    <option>Jueves</option>
+    <option>Viernes</option>
+    <option>Sábado</option>
+    <option>Domingo</option>
+  </select>
+
+  <select id="turno">
+    <option>Mañana</option>
+    <option>Tarde</option>
+  </select>
+
+  <select id="lancha">
+    <option>N-01</option>
+    <option>N-02</option>
+    <option>N-03</option>
+    <option>N-04</option>
+  </select>
+
+  <select id="entrenador">
+    <option>Sergio</option>
+    <option>Álvaro</option>
+    <option>Carlos</option>
+  </select>
+
+  <button onclick="añadir()">Asignar</button>
 </div>
 
-<div class="card">
-  <h3>Sábado</h3>
-  <p>Mañana: N-05 - Carlos</p>
-  <p>Tarde: N-07 - Iván</p>
-</div>
+<div id="resultado"></div>
+
+<script>
+let datos = [];
+
+function añadir() {
+  const dia = document.getElementById("dia").value;
+  const turno = document.getElementById("turno").value;
+  const lancha = document.getElementById("lancha").value;
+  const entrenador = document.getElementById("entrenador").value;
+
+  datos.push({ dia, turno, lancha, entrenador });
+
+  pintar();
+}
+
+function pintar() {
+  let html = "";
+
+  const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+
+  dias.forEach(d => {
+    const items = datos.filter(i => i.dia === d);
+
+    if(items.length > 0){
+      html += `<div class="card"><h3>${d}</h3>`;
+
+      items.forEach(i => {
+        html += `<p>${i.turno}: ${i.lancha} - ${i.entrenador}</p>`;
+      });
+
+      html += `</div>`;
+    }
+  });
+
+  document.getElementById("resultado").innerHTML = html;
+}
+</script>
 
 </body>
 </html>
