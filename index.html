@@ -24,16 +24,6 @@
       padding: 15px;
     }
 
-    .resumen {
-      background: #0077b6;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
     .bloque {
       margin-bottom: 20px;
     }
@@ -72,13 +62,14 @@ function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 }
 
-// 🔵 CARGAR TODO
+// 🔵 CARGAR DATOS
 async function cargar() {
 
-  // HOJA PLANIFICACIÓN (Hoja 1)
+  // HOJA 1 (PLANIFICACIÓN)
   const res1 = await fetch(URL_BASE + "Hoja%201");
   const text1 = await res1.text();
 
@@ -94,8 +85,8 @@ async function cargar() {
     };
   });
 
-  // 🟢 HOJA FLOTA
-  const res2 = await fetch(URL_BASE + "FLOTA");
+  // 🟢 HOJA 2 (FLOTA)
+  const res2 = await fetch(URL_BASE + "Hoja%202");
   const text2 = await res2.text();
 
   const filas2 = text2.trim().split("\n").slice(1);
@@ -114,47 +105,38 @@ async function cargar() {
 // 🔥 PINTAR TODO
 function pintar(asignaciones, flota) {
 
-  // CONTADORES
-  let agua = 0;
-  let tierra = 0;
-  let mantenimiento = 0;
-
   let listaAgua = [];
   let listaTierra = [];
   let listaMant = [];
 
   flota.forEach(i => {
+
     const e = normalizar(i.estado);
 
-    if(e === "agua"){
-      agua++;
+    if(e.includes("agua")){
       listaAgua.push(i.lancha);
     }
-    else if(e === "tierra"){
-      tierra++;
+    else if(e.includes("tierra")){
       listaTierra.push(i.lancha);
     }
-    else if(e === "mantenimiento"){
-      mantenimiento++;
+    else if(e.includes("mantenimiento")){
       listaMant.push(i.lancha);
     }
+
   });
 
-  let html = `
-  <div class="resumen">
-    🚤 Agua: ${agua} | 🏖 Tierra: ${tierra} | 🛠 Mantenimiento: ${mantenimiento}
-  </div>
-  `;
+  let html = "";
 
-  // LISTAS
+  // 🚤 FLOTAS
   html += `<div class="bloque"><h3>🚤 En el agua</h3>${listaAgua.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
   html += `<div class="bloque"><h3>🏖 En tierra</h3>${listaTierra.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
   html += `<div class="bloque"><h3>🛠 Mantenimiento</h3>${listaMant.map(l => `<div class="card">${l}</div>`).join("")}</div>`;
 
-  // PLANIFICACIÓN
+  // 📅 PLANIFICACIÓN
   const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
   diasOrden.forEach(d => {
+
     const items = asignaciones.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
 
