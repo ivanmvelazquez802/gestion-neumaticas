@@ -63,7 +63,7 @@ function normalizar(texto) {
     .trim();
 }
 
-// 🔵 CARGAR DATOS DESDE GOOGLE SHEETS
+// 🔵 CARGAR DATOS
 async function cargar() {
 
   try {
@@ -78,15 +78,18 @@ async function cargar() {
     let datos = filas.map(f => {
       const c = f.split(/,|;/);
 
-      return {     
-  dia: (c[0] || "").trim(),
-  turno: (c[1] || "").trim(),
-  lancha: (c[2] || "").trim(),
-  entrenador: (c[3] || "").trim(),
-  categoria: (c[4] || "").trim()
-
+      return {
+        dia: (c[0] || "").trim(),
+        turno: (c[1] || "").trim(),
+        lancha: (c[2] || "").trim(),
+        entrenador: (c[3] || "").trim(),
+        categoria: (c[4] || "").trim(),
+        evento: (c[5] || "").trim()
       };
     });
+
+    // 🔥 eliminar filas vacías
+    datos = datos.filter(d => d.dia !== "");
 
     pintar(datos);
 
@@ -97,7 +100,7 @@ async function cargar() {
   }
 }
 
-// 🔥 PINTAR EN PANTALLA
+// 🔥 PINTAR
 function pintar(datos) {
 
   let html = "";
@@ -109,10 +112,7 @@ function pintar(datos) {
     const items = datos.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
 
-    html += `<div class="card">
-  ${i.lancha} - ${i.entrenador}
-  <br><small>${i.categoria}</small>
-</div>`;
+    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
@@ -120,14 +120,20 @@ function pintar(datos) {
     if(manana.length > 0){
       html += `<h4>🟦 Mañana</h4>`;
       manana.forEach(i => {
-        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+        html += `<div class="card">
+          <strong>${i.lancha}</strong> - ${i.entrenador}
+          ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
+        </div>`;
       });
     }
 
     if(tarde.length > 0){
       html += `<h4>🟨 Tarde</h4>`;
       tarde.forEach(i => {
-        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+        html += `<div class="card">
+          <strong>${i.lancha}</strong> - ${i.entrenador}
+          ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
+        </div>`;
       });
     }
 
