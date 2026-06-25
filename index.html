@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #0b1f33;
       color: white;
     }
@@ -39,79 +39,8 @@
       padding: 20px;
     }
 
-    .resumen {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 25px;
-    }
-
-    .resumen-card {
-      background: #112b45;
-      padding: 14px;
-      border-radius: 12px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .resumen-card strong {
-      display: block;
-      font-size: 24px;
-      margin-top: 5px;
-      color: #ffd966;
-    }
-
-    .alertas {
-      background: #2b1020;
-      border: 1px solid #ff4d4d;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-    }
-
-    .grupo-alerta {
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .grupo-alerta:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-
-    .grupo-alerta h4 {
-      margin: 0 0 6px 0;
-      color: #ffd966;
-    }
-
-    .grupo-alerta div {
-      font-size: 14px;
-      margin: 3px 0;
-    }
-
     .bloque {
       margin-bottom: 25px;
-      background: #0f2a43;
-      padding: 12px;
-      border-radius: 12px;
-    }
-
-    .hoy {
-      border: 3px solid #ffd966;
-      background: #12385c;
-      box-shadow: 0 0 12px rgba(255,217,102,0.35);
-    }
-
-    .etiqueta-hoy {
-      display: inline-block;
-      background: #ffd966;
-      color: #0b1f33;
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      margin-bottom: 6px;
-      font-weight: bold;
     }
 
     .card {
@@ -119,43 +48,50 @@
       padding: 12px;
       border-radius: 10px;
       margin-bottom: 8px;
-      border-left: 5px solid #0077b6;
-    }
-
-    .card strong {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 6px;
-      color: #ffffff;
-    }
-
-    .card small {
-      display: block;
-      margin-top: 3px;
-      font-size: 13px;
     }
 
     .duplicado {
       background: #ff9933 !important;
       color: black;
-      border-left: 5px solid #ff4d4d;
     }
 
-    .duplicado strong,
-    .duplicado small {
-      color: black !important;
+    .hoy {
+      background: #0f2f4f;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .alertas {
+      background: #ff4d4d;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
     }
 
     h3 {
       border-bottom: 2px solid #0077b6;
       padding-bottom: 5px;
-      margin-top: 0;
     }
 
     h4 {
-      margin: 12px 0 8px 0;
+      margin: 8px 0 4px 0;
     }
-  </style>
+  
+    .disponibles {
+      background:#0f3d2e;
+      border:1px solid #00cc66;
+      padding:15px;
+      border-radius:12px;
+      margin-bottom:25px;
+    }
+
+    .disponibles-lista{
+      font-size:18px;
+      line-height:1.8;
+      font-weight:bold;
+    }
+
+</style>
 </head>
 
 <body>
@@ -170,11 +106,15 @@
 
 <script>
 
+// 📅 ACTUALIZADO
 document.getElementById("actualizado").innerText =
   "📅 Actualizado: " + new Date().toLocaleString("es-ES");
 
+// 📅 SEMANA
 function obtenerSemana() {
+
   const hoy = new Date();
+
   const dia = hoy.getDay();
   const diferencia = dia === 0 ? -6 : 1 - dia;
 
@@ -196,8 +136,11 @@ function obtenerSemana() {
 
 document.getElementById("semana").innerText = obtenerSemana();
 
+// 📆 FECHAS POR DÍA
 function obtenerFechasSemana() {
+
   const hoy = new Date();
+
   const dia = hoy.getDay();
   const diferencia = dia === 0 ? -6 : 1 - dia;
 
@@ -205,6 +148,7 @@ function obtenerFechasSemana() {
   lunes.setDate(hoy.getDate() + diferencia);
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+
   let mapa = {};
 
   dias.forEach((d, i) => {
@@ -222,6 +166,7 @@ function obtenerFechasSemana() {
 
 const fechasSemana = obtenerFechasSemana();
 
+// NORMALIZAR
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
@@ -230,12 +175,16 @@ function normalizar(texto) {
     .trim();
 }
 
+// DÍA ACTUAL
 const hoy = normalizar(
   new Date().toLocaleDateString("es-ES", { weekday: "long" })
 );
 
+// CARGAR DATOS
 async function cargar() {
+
   try {
+
     const url = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
 
     const res = await fetch(url);
@@ -267,166 +216,99 @@ async function cargar() {
   }
 }
 
+// PINTAR
 function pintar(datos) {
+
   let html = "";
+  let alertas = [];
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
+  // ALERTAS
+  datos.forEach(i => {
+
+    if(normalizar(i.tipo) === "tierra"){
+      alertas.push(`⚠️ ${i.lancha} en TIERRA pero asignada (${i.dia})`);
+    }
+
+    if(i.lancha !== "" && normalizar(i.entrenador) === ""){
+      alertas.push(`⚠️ ${i.lancha} SIN ENTRENADOR (${i.dia} - ${i.turno})`);
+    }
+
+  });
+
+  // LANCHAS NO USADAS
   const flota = [
     "N-01","N-02","N-03","N-04","N-05","N-06","N-07","N-08","N-09",
     "N-10","N-11","N-12","N-13","N-14","N-15","N-16","N-17","N-18",
     "N-19","N-20","N-21","N-22","N-23","N-24","N-25","N-26","N-27"
   ];
 
-  const alertas = {
-    tierra: [],
-    sinEntrenador: [],
-    duplicadas: [],
-    sinAsignar: []
-  };
-
-  datos.forEach(i => {
-    if (normalizar(i.tipo) === "tierra") {
-      alertas.tierra.push(`${i.lancha} asignada en tierra (${i.dia})`);
-    }
-
-    if (i.lancha !== "" && normalizar(i.entrenador) === "") {
-      alertas.sinEntrenador.push(`${i.lancha} sin entrenador (${i.dia} - ${i.turno})`);
-    }
-  });
-
-  const conteoLanchas = {};
-  datos.forEach(i => {
-    conteoLanchas[i.lancha] = (conteoLanchas[i.lancha] || 0) + 1;
-  });
-
-  Object.keys(conteoLanchas).forEach(lancha => {
-    if (conteoLanchas[lancha] > 1) {
-      alertas.duplicadas.push(`${lancha} aparece ${conteoLanchas[lancha]} veces`);
-    }
-  });
-
   const usadas = datos.map(d => d.lancha);
 
   flota.forEach(l => {
-    if (!usadas.includes(l)) {
-      alertas.sinAsignar.push(l);
+    if(!usadas.includes(l)){
+      alertas.push(`⚠️ ${l} SIN ASIGNAR`);
     }
   });
 
-  const totalAgua = datos.filter(d => normalizar(d.tipo) === "agua").length;
-  const totalTierra = datos.filter(d => normalizar(d.tipo) === "tierra").length;
-  const totalMantenimiento = datos.filter(d => normalizar(d.tipo) === "mantenimiento").length;
-  const totalIncidencias =
-    alertas.tierra.length +
-    alertas.sinEntrenador.length +
-    alertas.duplicadas.length +
-    alertas.sinAsignar.length;
-
-  html += `
-    <div class="resumen">
-      <div class="resumen-card">🚤 Flota<strong>${flota.length}</strong></div>
-      <div class="resumen-card">🟢 Agua<strong>${totalAgua}</strong></div>
-      <div class="resumen-card">⚪ Tierra<strong>${totalTierra}</strong></div>
-      <div class="resumen-card">🔧 Mantenimiento<strong>${totalMantenimiento}</strong></div>
-      <div class="resumen-card">⭕ Sin asignar<strong>${alertas.sinAsignar.length}</strong></div>
-      <div class="resumen-card">⚠️ Incidencias<strong>${totalIncidencias}</strong></div>
-    </div>
-  `;
-
-  if (totalIncidencias > 0) {
-    html += `<div class="alertas"><h3>⚠️ ALERTAS OPERATIVAS</h3>`;
-
-    if (alertas.tierra.length > 0) {
-      html += `<div class="grupo-alerta"><h4>⚪ Lanchas en tierra asignadas</h4>`;
-      html += alertas.tierra.map(a => `<div>• ${a}</div>`).join("");
-      html += `</div>`;
-    }
-
-    if (alertas.sinEntrenador.length > 0) {
-      html += `<div class="grupo-alerta"><h4>👤 Lanchas sin entrenador</h4>`;
-      html += alertas.sinEntrenador.map(a => `<div>• ${a}</div>`).join("");
-      html += `</div>`;
-    }
-
-    if (alertas.duplicadas.length > 0) {
-      html += `<div class="grupo-alerta"><h4>🔁 Lanchas duplicadas</h4>`;
-      html += alertas.duplicadas.map(a => `<div>• ${a}</div>`).join("");
-      html += `</div>`;
-    }
-
-    if (alertas.sinAsignar.length > 0) {
-      html += `<div class="grupo-alerta"><h4>⭕ Lanchas sin asignar</h4>`;
-      html += alertas.sinAsignar.map(a => `<div>• ${a}</div>`).join("");
-      html += `</div>`;
-    }
-
-    html += `</div>`;
+  if(alertas.length > 0){
+    html += `<div class="alertas">
+      <h3>⚠️ ALERTAS</h3>
+      ${alertas.map(a => `<div>${a}</div>`).join("")}
+    </div>`;
   }
 
   dias.forEach(d => {
+
     const items = datos.filter(i => normalizar(i.dia) === d);
-    if (items.length === 0) return;
+    if(items.length === 0) return;
 
     const esHoy = d === hoy;
 
-    let contadorDia = {};
+    let contador = {};
     items.forEach(i => {
-      contadorDia[i.lancha] = (contadorDia[i.lancha] || 0) + 1;
+      contador[i.lancha] = (contador[i.lancha] || 0) + 1;
     });
 
-    html += `
-      <div class="bloque ${esHoy ? 'hoy' : ''}">
-        ${esHoy ? '<div class="etiqueta-hoy">⭐ HOY</div>' : ''}
-        <h3 style="${esHoy ? 'color:#ffd966;' : ''}">
-          ${d.toUpperCase()} ${fechasSemana[d].toUpperCase()}
-        </h3>
-    `;
+    html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
+      <h3 style="${esHoy ? 'color:#ffd966;' : ''}">
+        ${d.toUpperCase()} ${fechasSemana[d].toUpperCase()}
+      </h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
 
-    function pintarCards(lista) {
+    function pintarCards(lista){
+
       lista.forEach(i => {
+
         let colorEvento = "";
-        if (normalizar(i.evento) === "regata") colorEvento = "#ff4d4d";
-        else if (normalizar(i.evento) === "entreno") colorEvento = "#4da6ff";
+        if(normalizar(i.evento) === "regata") colorEvento = "#ff4d4d";
+        else if(normalizar(i.evento) === "entreno") colorEvento = "#4da6ff";
 
         let colorTipo = "";
-        let iconoTipo = "⚓";
+        if(normalizar(i.tipo) === "agua") colorTipo = "#00cc66";
+        else if(normalizar(i.tipo) === "tierra") colorTipo = "#cccccc";
+        else if(normalizar(i.tipo) === "mantenimiento") colorTipo = "#ff9933";
 
-        if (normalizar(i.tipo) === "agua") {
-          colorTipo = "#00cc66";
-          iconoTipo = "🟢";
-        } else if (normalizar(i.tipo) === "tierra") {
-          colorTipo = "#cccccc";
-          iconoTipo = "⚪";
-        } else if (normalizar(i.tipo) === "mantenimiento") {
-          colorTipo = "#ff9933";
-          iconoTipo = "🔧";
-        }
+        const esDuplicado = contador[i.lancha] > 1;
 
-        const esDuplicado = contadorDia[i.lancha] > 1;
-
-        html += `
-          <div class="card ${esDuplicado ? 'duplicado' : ''}">
-            <strong>🚤 ${i.lancha}</strong>
-            <small>👤 ${i.entrenador || "⚠️ SIN ENTRENADOR"}</small>
-            ${i.categoria ? `<small>⛵ ${i.categoria}</small>` : ""}
-            ${i.tipo ? `<small style="color:${colorTipo}">${iconoTipo} ${i.tipo}</small>` : ""}
-            ${i.evento ? `<small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
-            ${esDuplicado ? `<small>🔁 DUPLICADA EN ESTE DÍA</small>` : ""}
-          </div>
-        `;
+        html += `<div class="card ${esDuplicado ? 'duplicado' : ''}">
+          <strong>${i.lancha}</strong> - ${i.entrenador || "⚠️ SIN ASIGNAR"}
+          ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
+          ${i.evento ? `<br><small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
+          ${i.tipo ? `<br><small style="color:${colorTipo}">⚓ ${i.tipo}</small>` : ""}
+        </div>`;
       });
     }
 
-    if (manana.length > 0) {
+    if(manana.length > 0){
       html += `<h4>🟦 Mañana</h4>`;
       pintarCards(manana);
     }
 
-    if (tarde.length > 0) {
+    if(tarde.length > 0){
       html += `<h4>🟨 Tarde</h4>`;
       pintarCards(tarde);
     }
@@ -437,6 +319,7 @@ function pintar(datos) {
   document.getElementById("app").innerHTML = html;
 }
 
+// ARRANCAR
 cargar();
 
 </script>
