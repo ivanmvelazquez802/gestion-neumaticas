@@ -20,10 +20,28 @@
       font-weight: bold;
     }
 
-    iframe {
-      width: 100%;
-      height: 90vh;
-      border: none;
+    .contenedor {
+      padding: 15px;
+    }
+
+    .bloque {
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #112b45;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+
+    h3 {
+      border-bottom: 2px solid #0077b6;
+      padding-bottom: 5px;
+    }
+
+    h4 {
+      margin: 8px 0 4px 0;
     }
   </style>
 </head>
@@ -32,9 +50,92 @@
 
 <header>⚓ Gestión Neumáticas RCNGC</header>
 
-<iframe 
-src="https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/edit?usp=sharing">
-</iframe>
+<div class="contenedor" id="app">Cargando...</div>
+
+<script>
+
+// 🔵 NORMALIZAR TEXTO
+function normalizar(texto) {
+  return (texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+// 🔵 CARGAR DATOS DESDE GOOGLE SHEETS
+async function cargar() {
+
+  try {
+
+    const url = "https://docs.google.com/spreadsheets/d/1qizU7-hMShlMsOK5O64WNGCd0swQ7oMAtSywjbho8EE/export?format=csv&sheet=Hoja%201";
+
+    const res = await fetch(url);
+    const text = await res.text();
+
+    const filas = text.trim().split(/\r?\n/).slice(1);
+
+    let datos = filas.map(f => {
+      const c = f.split(/,|;/);
+
+      return {
+        dia: (c[0] || "").trim(),
+        turno: (c[1] || "").trim(),
+        lancha: (c[2] || "").trim(),
+        entrenador: (c[3] || "").trim()
+      };
+    });
+
+    pintar(datos);
+
+  } catch (error) {
+    document.getElementById("app").innerHTML = 
+      "<p style='color:red'>❌ Error cargando datos</p>";
+    console.error(error);
+  }
+}
+
+// 🔥 PINTAR EN PANTALLA
+function pintar(datos) {
+
+  let html = "";
+
+  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+
+  dias.forEach(d => {
+
+    const items = datos.filter(i => normalizar(i.dia) === d);
+    if(items.length === 0) return;
+
+    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
+
+    const manana = items.filter(i => normalizar(i.turno) === "manana");
+    const tarde = items.filter(i => normalizar(i.turno) === "tarde");
+
+    if(manana.length > 0){
+      html += `<h4>🟦 Mañana</h4>`;
+      manana.forEach(i => {
+        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+      });
+    }
+
+    if(tarde.length > 0){
+      html += `<h4>🟨 Tarde</h4>`;
+      tarde.forEach(i => {
+        html += `<div class="card">${i.lancha} - ${i.entrenador}</div>`;
+      });
+    }
+
+    html += `</div>`;
+  });
+
+  document.getElementById("app").innerHTML = html;
+}
+
+// 🚀 ARRANCAR
+cargar();
+
+</script>
 
 </body>
 </html>
