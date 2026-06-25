@@ -21,7 +21,6 @@
       letter-spacing: 1px;
     }
 
-    /* 🔥 CONTENIDO CENTRADO */
     .contenedor {
       max-width: 1000px;
       margin: 0 auto;
@@ -39,8 +38,10 @@
       margin-bottom: 8px;
     }
 
+    /* 🟠 DUPLICADOS */
     .duplicado {
-      background: #ff4d4d !important;
+      background: #ff9933 !important;
+      color: black;
     }
 
     .hoy {
@@ -133,14 +134,22 @@ function pintar(datos) {
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-  // 🔴 ALERTA TIERRA
+  // 🔴 ALERTAS
   datos.forEach(i => {
+
+    // TIERRA
     if(normalizar(i.tipo) === "tierra"){
       alertas.push(`⚠️ ${i.lancha} en TIERRA pero asignada (${i.dia})`);
     }
+
+    // 🔥 SIN ENTRENADOR (LA IMPORTANTE)
+    if(i.lancha !== "" && normalizar(i.entrenador) === ""){
+      alertas.push(`⚠️ ${i.lancha} SIN ENTRENADOR (${i.dia})`);
+    }
+
   });
 
-  // 🔴 MOSTRAR ALERTAS
+  // MOSTRAR ALERTAS
   if(alertas.length > 0){
     html += `<div class="alertas">
       <h3>⚠️ ALERTAS</h3>
@@ -183,7 +192,7 @@ function pintar(datos) {
         const esDuplicado = contador[i.lancha] > 1;
 
         html += `<div class="card ${esDuplicado ? 'duplicado' : ''}">
-          <strong>${i.lancha}</strong> - ${i.entrenador}
+          <strong>${i.lancha}</strong> - ${i.entrenador || "❌ SIN ASIGNAR"}
           ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
           ${i.evento ? `<br><small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
           ${i.tipo ? `<br><small style="color:${colorTipo}">⚓ ${i.tipo}</small>` : ""}
