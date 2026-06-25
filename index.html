@@ -78,11 +78,13 @@ async function cargar() {
     let datos = filas.map(f => {
       const c = f.split(/,|;/);
 
-      return {
-        dia: (c[0] || "").trim(),
-        turno: (c[1] || "").trim(),
-        lancha: (c[2] || "").trim(),
-        entrenador: (c[3] || "").trim()
+      return {     
+  dia: (c[0] || "").trim(),
+  turno: (c[1] || "").trim(),
+  lancha: (c[2] || "").trim(),
+  entrenador: (c[3] || "").trim(),
+  categoria: (c[4] || "").trim()
+
       };
     });
 
@@ -107,7 +109,10 @@ function pintar(datos) {
     const items = datos.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
 
-    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
+    html += `<div class="card">
+  ${i.lancha} - ${i.entrenador}
+  <br><small>${i.categoria}</small>
+</div>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
