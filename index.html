@@ -26,6 +26,13 @@
       opacity: 0.7;
     }
 
+    #semana {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffd966;
+    }
+
     .contenedor {
       max-width: 1000px;
       margin: 0 auto;
@@ -77,15 +84,42 @@
 <header>
   ⚓ Gestión Neumáticas RCNGC
   <div id="actualizado"></div>
+  <div id="semana"></div>
 </header>
 
 <div class="contenedor" id="app">Cargando...</div>
 
 <script>
 
-// 📅 FECHA AUTOMÁTICA
+// 📅 FECHA ACTUAL
 document.getElementById("actualizado").innerText =
   "📅 Actualizado: " + new Date().toLocaleString("es-ES");
+
+// 📅 SEMANA
+function obtenerSemana() {
+
+  const hoy = new Date();
+
+  const dia = hoy.getDay();
+  const diferencia = dia === 0 ? -6 : 1 - dia;
+
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diferencia);
+
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+
+  const formato = (fecha) =>
+    fecha.toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long"
+    });
+
+  return `📅 SEMANA: ${formato(lunes).toUpperCase()} – ${formato(domingo).toUpperCase()}`;
+}
+
+document.getElementById("semana").innerText = obtenerSemana();
 
 // NORMALIZAR
 function normalizar(texto) {
@@ -158,7 +192,7 @@ function pintar(datos) {
 
   });
 
-  // 🔥 LANCHAS NO USADAS
+  // LANCHAS NO USADAS
   const flota = [
     "N-01","N-02","N-03","N-04","N-05","N-06","N-07","N-08","N-09",
     "N-10","N-11","N-12","N-13","N-14","N-15","N-16","N-17","N-18",
@@ -173,7 +207,6 @@ function pintar(datos) {
     }
   });
 
-  // MOSTRAR ALERTAS
   if(alertas.length > 0){
     html += `<div class="alertas">
       <h3>⚠️ ALERTAS</h3>
@@ -194,7 +227,7 @@ function pintar(datos) {
     });
 
     html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
-      <h3>${esHoy ? '🔥 ' : ''}${d.toUpperCase()}</h3>`;
+      <h3>${d.toUpperCase()}</h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
