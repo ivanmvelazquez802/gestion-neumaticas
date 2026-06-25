@@ -14,25 +14,29 @@
 
     header {
       background: #0077b6;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
+      letter-spacing: 1px;
     }
 
+    /* 🔥 CONTENIDO CENTRADO */
     .contenedor {
-      padding: 15px;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     .bloque {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .card {
       background: #112b45;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 6px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
     }
 
     .duplicado {
@@ -129,7 +133,7 @@ function pintar(datos) {
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-  // 🔴 DETECTAR ALERTAS TIERRA
+  // 🔴 ALERTA TIERRA
   datos.forEach(i => {
     if(normalizar(i.tipo) === "tierra"){
       alertas.push(`⚠️ ${i.lancha} en TIERRA pero asignada (${i.dia})`);
