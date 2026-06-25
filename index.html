@@ -91,7 +91,7 @@
 
 <script>
 
-// 📅 FECHA ACTUAL
+// 📅 ACTUALIZADO
 document.getElementById("actualizado").innerText =
   "📅 Actualizado: " + new Date().toLocaleString("es-ES");
 
@@ -120,6 +120,36 @@ function obtenerSemana() {
 }
 
 document.getElementById("semana").innerText = obtenerSemana();
+
+// 📆 FECHAS POR DÍA
+function obtenerFechasSemana() {
+
+  const hoy = new Date();
+
+  const dia = hoy.getDay();
+  const diferencia = dia === 0 ? -6 : 1 - dia;
+
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diferencia);
+
+  const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+
+  let mapa = {};
+
+  dias.forEach((d, i) => {
+    const fecha = new Date(lunes);
+    fecha.setDate(lunes.getDate() + i);
+
+    mapa[d] = fecha.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "long"
+    });
+  });
+
+  return mapa;
+}
+
+const fechasSemana = obtenerFechasSemana();
 
 // NORMALIZAR
 function normalizar(texto) {
@@ -227,7 +257,9 @@ function pintar(datos) {
     });
 
     html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
-      <h3>${d.toUpperCase()}</h3>`;
+      <h3 style="${esHoy ? 'color:#ffd966;' : ''}">
+        ${d.toUpperCase()} ${fechasSemana[d].toUpperCase()}
+      </h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
