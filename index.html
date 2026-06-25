@@ -37,13 +37,19 @@
 
     .duplicado {
       background: #ff4d4d !important;
-      color: white;
     }
 
     .hoy {
       background: #0f2f4f;
       padding: 10px;
       border-radius: 10px;
+    }
+
+    .alertas {
+      background: #ff4d4d;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
     }
 
     h3 {
@@ -105,7 +111,6 @@ async function cargar() {
       };
     });
 
-    // limpiar filas vacías
     datos = datos.filter(d => d.dia !== "" && d.lancha !== "");
 
     pintar(datos);
@@ -113,7 +118,6 @@ async function cargar() {
   } catch (error) {
     document.getElementById("app").innerHTML = 
       "<p style='color:red'>❌ Error cargando datos</p>";
-    console.error(error);
   }
 }
 
@@ -121,8 +125,24 @@ async function cargar() {
 function pintar(datos) {
 
   let html = "";
+  let alertas = [];
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+
+  // 🔴 DETECTAR ALERTAS TIERRA
+  datos.forEach(i => {
+    if(normalizar(i.tipo) === "tierra"){
+      alertas.push(`⚠️ ${i.lancha} en TIERRA pero asignada (${i.dia})`);
+    }
+  });
+
+  // 🔴 MOSTRAR ALERTAS
+  if(alertas.length > 0){
+    html += `<div class="alertas">
+      <h3>⚠️ ALERTAS</h3>
+      ${alertas.map(a => `<div>${a}</div>`).join("")}
+    </div>`;
+  }
 
   dias.forEach(d => {
 
@@ -131,11 +151,10 @@ function pintar(datos) {
 
     const esHoy = d === hoy;
 
-    // 🔴 DETECTAR DUPLICADOS
+    // 🔴 DUPLICADOS
     let contador = {};
     items.forEach(i => {
-      const key = i.lancha;
-      contador[key] = (contador[key] || 0) + 1;
+      contador[i.lancha] = (contador[i.lancha] || 0) + 1;
     });
 
     html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
@@ -157,7 +176,6 @@ function pintar(datos) {
         else if(normalizar(i.tipo) === "tierra") colorTipo = "#cccccc";
         else if(normalizar(i.tipo) === "mantenimiento") colorTipo = "#ff9933";
 
-        // 🔴 SI DUPLICADA
         const esDuplicado = contador[i.lancha] > 1;
 
         html += `<div class="card ${esDuplicado ? 'duplicado' : ''}">
