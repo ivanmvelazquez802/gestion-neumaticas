@@ -35,6 +35,11 @@
       margin-bottom: 6px;
     }
 
+    .duplicado {
+      background: #ff4d4d !important;
+      color: white;
+    }
+
     .hoy {
       background: #0f2f4f;
       padding: 10px;
@@ -60,7 +65,7 @@
 
 <script>
 
-// 🔵 NORMALIZAR TEXTO
+// 🔵 NORMALIZAR
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
@@ -95,11 +100,12 @@ async function cargar() {
         lancha: (c[2] || "").trim(),
         entrenador: (c[3] || "").trim(),
         categoria: (c[4] || "").trim(),
-        evento: (c[5] || "").trim()
+        evento: (c[5] || "").trim(),
+        tipo: (c[6] || "").trim()
       };
     });
 
-    // 🔥 LIMPIAR FILAS VACÍAS
+    // limpiar filas vacías
     datos = datos.filter(d => d.dia !== "" && d.lancha !== "");
 
     pintar(datos);
@@ -125,6 +131,13 @@ function pintar(datos) {
 
     const esHoy = d === hoy;
 
+    // 🔴 DETECTAR DUPLICADOS
+    let contador = {};
+    items.forEach(i => {
+      const key = i.lancha;
+      contador[key] = (contador[key] || 0) + 1;
+    });
+
     html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
       <h3>${esHoy ? '🔥 ' : ''}${d.toUpperCase()}</h3>`;
 
@@ -132,17 +145,26 @@ function pintar(datos) {
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
 
     function pintarCards(lista){
+
       lista.forEach(i => {
 
         let colorEvento = "";
-
         if(normalizar(i.evento) === "regata") colorEvento = "#ff4d4d";
         else if(normalizar(i.evento) === "entreno") colorEvento = "#4da6ff";
 
-        html += `<div class="card">
+        let colorTipo = "";
+        if(normalizar(i.tipo) === "agua") colorTipo = "#00cc66";
+        else if(normalizar(i.tipo) === "tierra") colorTipo = "#cccccc";
+        else if(normalizar(i.tipo) === "mantenimiento") colorTipo = "#ff9933";
+
+        // 🔴 SI DUPLICADA
+        const esDuplicado = contador[i.lancha] > 1;
+
+        html += `<div class="card ${esDuplicado ? 'duplicado' : ''}">
           <strong>${i.lancha}</strong> - ${i.entrenador}
           ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
           ${i.evento ? `<br><small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
+          ${i.tipo ? `<br><small style="color:${colorTipo}">⚓ ${i.tipo}</small>` : ""}
         </div>`;
       });
     }
