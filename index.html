@@ -18,7 +18,6 @@
       text-align: center;
       font-size: 22px;
       font-weight: bold;
-      letter-spacing: 1px;
     }
 
     .contenedor {
@@ -38,7 +37,6 @@
       margin-bottom: 8px;
     }
 
-    /* 🟠 DUPLICADOS */
     .duplicado {
       background: #ff9933 !important;
       color: black;
@@ -76,7 +74,7 @@
 
 <script>
 
-// 🔵 NORMALIZAR
+// NORMALIZAR
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
@@ -85,12 +83,12 @@ function normalizar(texto) {
     .trim();
 }
 
-// 🔥 DÍA ACTUAL
+// DÍA ACTUAL
 const hoy = normalizar(
   new Date().toLocaleDateString("es-ES", { weekday: "long" })
 );
 
-// 🔵 CARGAR DATOS
+// CARGAR DATOS
 async function cargar() {
 
   try {
@@ -126,7 +124,7 @@ async function cargar() {
   }
 }
 
-// 🔥 PINTAR
+// PINTAR
 function pintar(datos) {
 
   let html = "";
@@ -134,19 +132,32 @@ function pintar(datos) {
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-  // 🔴 ALERTAS
+  // 🔴 ALERTAS EXISTENTES
   datos.forEach(i => {
 
-    // TIERRA
     if(normalizar(i.tipo) === "tierra"){
       alertas.push(`⚠️ ${i.lancha} en TIERRA pero asignada (${i.dia})`);
     }
 
-    // 🔥 SIN ENTRENADOR (LA IMPORTANTE)
     if(i.lancha !== "" && normalizar(i.entrenador) === ""){
-      alertas.push(`⚠️ ${i.lancha} SIN ENTRENADOR (${i.dia})`);
+      alertas.push(`⚠️ ${i.lancha} SIN ENTRENADOR (${i.dia} - ${i.turno})`);
     }
 
+  });
+
+  // 🔥 ALERTA CLAVE → LANCHAS NO USADAS
+  const flota = [
+    "N-01","N-02","N-03","N-04","N-05","N-06","N-07","N-08","N-09",
+    "N-10","N-11","N-12","N-13","N-14","N-15","N-16","N-17","N-18",
+    "N-19","N-20","N-21","N-22","N-23","N-24","N-25","N-26","N-27"
+  ];
+
+  const usadas = datos.map(d => d.lancha);
+
+  flota.forEach(l => {
+    if(!usadas.includes(l)){
+      alertas.push(`⚠️ ${l} SIN ASIGNAR`);
+    }
   });
 
   // MOSTRAR ALERTAS
@@ -164,7 +175,7 @@ function pintar(datos) {
 
     const esHoy = d === hoy;
 
-    // 🔴 DUPLICADOS
+    // DUPLICADOS
     let contador = {};
     items.forEach(i => {
       contador[i.lancha] = (contador[i.lancha] || 0) + 1;
@@ -192,7 +203,7 @@ function pintar(datos) {
         const esDuplicado = contador[i.lancha] > 1;
 
         html += `<div class="card ${esDuplicado ? 'duplicado' : ''}">
-          <strong>${i.lancha}</strong> - ${i.entrenador || "❌ SIN ASIGNAR"}
+          <strong>${i.lancha}</strong> - ${i.entrenador || "⚠️ SIN ASIGNAR"}
           ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
           ${i.evento ? `<br><small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
           ${i.tipo ? `<br><small style="color:${colorTipo}">⚓ ${i.tipo}</small>` : ""}
@@ -216,7 +227,7 @@ function pintar(datos) {
   document.getElementById("app").innerHTML = html;
 }
 
-// 🚀 ARRANCAR
+// ARRANCAR
 cargar();
 
 </script>
