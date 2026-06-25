@@ -20,6 +20,12 @@
       font-weight: bold;
     }
 
+    #actualizado {
+      font-size: 12px;
+      margin-top: 5px;
+      opacity: 0.7;
+    }
+
     .contenedor {
       max-width: 1000px;
       margin: 0 auto;
@@ -68,11 +74,18 @@
 
 <body>
 
-<header>⚓ Gestión Neumáticas RCNGC</header>
+<header>
+  ⚓ Gestión Neumáticas RCNGC
+  <div id="actualizado"></div>
+</header>
 
 <div class="contenedor" id="app">Cargando...</div>
 
 <script>
+
+// 📅 FECHA AUTOMÁTICA
+document.getElementById("actualizado").innerText =
+  "📅 Actualizado: " + new Date().toLocaleString("es-ES");
 
 // NORMALIZAR
 function normalizar(texto) {
@@ -119,7 +132,7 @@ async function cargar() {
     pintar(datos);
 
   } catch (error) {
-    document.getElementById("app").innerHTML = 
+    document.getElementById("app").innerHTML =
       "<p style='color:red'>❌ Error cargando datos</p>";
   }
 }
@@ -132,7 +145,7 @@ function pintar(datos) {
 
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-  // 🔴 ALERTAS EXISTENTES
+  // ALERTAS
   datos.forEach(i => {
 
     if(normalizar(i.tipo) === "tierra"){
@@ -145,7 +158,7 @@ function pintar(datos) {
 
   });
 
-  // 🔥 ALERTA CLAVE → LANCHAS NO USADAS
+  // 🔥 LANCHAS NO USADAS
   const flota = [
     "N-01","N-02","N-03","N-04","N-05","N-06","N-07","N-08","N-09",
     "N-10","N-11","N-12","N-13","N-14","N-15","N-16","N-17","N-18",
@@ -175,7 +188,6 @@ function pintar(datos) {
 
     const esHoy = d === hoy;
 
-    // DUPLICADOS
     let contador = {};
     items.forEach(i => {
       contador[i.lancha] = (contador[i.lancha] || 0) + 1;
