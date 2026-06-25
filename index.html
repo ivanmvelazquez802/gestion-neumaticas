@@ -35,6 +35,12 @@
       margin-bottom: 6px;
     }
 
+    .hoy {
+      background: #0f2f4f;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
     h3 {
       border-bottom: 2px solid #0077b6;
       padding-bottom: 5px;
@@ -63,6 +69,11 @@ function normalizar(texto) {
     .trim();
 }
 
+// 🔥 DÍA ACTUAL
+const hoy = normalizar(
+  new Date().toLocaleDateString("es-ES", { weekday: "long" })
+);
+
 // 🔵 CARGAR DATOS
 async function cargar() {
 
@@ -88,8 +99,8 @@ async function cargar() {
       };
     });
 
-    // 🔥 eliminar filas vacías
-    datos = datos.filter(d => d.dia !== "");
+    // 🔥 LIMPIAR FILAS VACÍAS
+    datos = datos.filter(d => d.dia !== "" && d.lancha !== "");
 
     pintar(datos);
 
@@ -112,29 +123,38 @@ function pintar(datos) {
     const items = datos.filter(i => normalizar(i.dia) === d);
     if(items.length === 0) return;
 
-    html += `<div class="bloque"><h3>${d.toUpperCase()}</h3>`;
+    const esHoy = d === hoy;
+
+    html += `<div class="bloque ${esHoy ? 'hoy' : ''}">
+      <h3>${esHoy ? '🔥 ' : ''}${d.toUpperCase()}</h3>`;
 
     const manana = items.filter(i => normalizar(i.turno) === "manana");
     const tarde = items.filter(i => normalizar(i.turno) === "tarde");
 
-    if(manana.length > 0){
-      html += `<h4>🟦 Mañana</h4>`;
-      manana.forEach(i => {
+    function pintarCards(lista){
+      lista.forEach(i => {
+
+        let colorEvento = "";
+
+        if(normalizar(i.evento) === "regata") colorEvento = "#ff4d4d";
+        else if(normalizar(i.evento) === "entreno") colorEvento = "#4da6ff";
+
         html += `<div class="card">
           <strong>${i.lancha}</strong> - ${i.entrenador}
           ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
+          ${i.evento ? `<br><small style="color:${colorEvento}">📍 ${i.evento}</small>` : ""}
         </div>`;
       });
     }
 
+    if(manana.length > 0){
+      html += `<h4>🟦 Mañana</h4>`;
+      pintarCards(manana);
+    }
+
     if(tarde.length > 0){
       html += `<h4>🟨 Tarde</h4>`;
-      tarde.forEach(i => {
-        html += `<div class="card">
-          <strong>${i.lancha}</strong> - ${i.entrenador}
-          ${i.categoria ? `<br><small>⛵ ${i.categoria}</small>` : ""}
-        </div>`;
-      });
+      pintarCards(tarde);
     }
 
     html += `</div>`;
